@@ -8,4 +8,15 @@
   - JSON Streaming Parser by Daniel Eichhorn (tested with v1.0.5)
 
 ## Usage
-Upload sketch and follow instruction on screen
+### Step 1: Use [ESP32 Sketch data upload](https://randomnerdtutorials.com/install-esp32-filesystem-uploader-arduino-ide/) to upload the icons from data folder.
+### Step 2: Update the config.h file with configuration details
+`
+#define SSID     "*****" // your network SSID (name of wifi network)
+#define PASSWORD "*****" // your network password
+#define TODOIST_TOKEN "*******" // your todoist API key without the word "Bearer"
+#define CITY "*****" // your city for weather
+#define COUNTRY "*****" // your country for weather
+#define OWM_ID "*****" // your open weather map APP ID
+#define TIME_ZONE "-05:30" // your time zone relative to UTC. -05:30 is for India.
+`
+### Step 3: Select ESP32 Dev module in arduino `Tools>Board` and upload.
