@@ -33,7 +33,6 @@
 #include <esp_bt.h>
 #include <DNSServer.h>
 #include <WebServer.h>
-#include "WiFiManager.h"          //https://github.com/zhouhan0126/WIFIMANAGER-ESP32
 
 // #########  Configuration ##########
 #include "config.h"
@@ -49,20 +48,6 @@ GxEPD_Class display(io, /*RST=*/ EPD_RES, /*BUSY=*/ EPD_BUSY);
 
 // PCF8574 GPIO extender
 PCF8574 pcf8574(PCF_I2C_ADDR, SDA, SCL);
-
-// WiFi Manager for initial configuration
-WiFiManager wifiManager;
-WiFiManagerParameter city_param("city", "City", NULL, 30, "");
-WiFiManagerParameter country_param("country", "Country", NULL, 30, "");
-WiFiManagerParameter todoist_token_param("todoist_token", "Todoist token", NULL, 41, "");
-WiFiManagerParameter openweather_appkey_param("openweather_appkey", "OpenWeather appkey", NULL, 33, "");
-WiFiManagerParameter time_zone_param("time_zone", "Timezone", NULL, 7, "");
-
-RTC_DATA_ATTR char city_string[30];
-RTC_DATA_ATTR char country_string[30];
-RTC_DATA_ATTR char todoist_token_string[42];
-RTC_DATA_ATTR char openweather_appkey_string[34];
-RTC_DATA_ATTR char time_zone_string[7];
 
 const char* weather = NULL;
 char buf[2048];
@@ -104,28 +89,7 @@ void setup(void)
 		DEBUG.println("OK!");
 	}
 	delay(100);
-
-	if (first_boot == 1) {
-		DEBUG.printf("#######First boot#######\n");
-		load_config();
-		if(wakeup_reason != ESP_SLEEP_WAKEUP_TIMER && wakeup_reason != ESP_SLEEP_WAKEUP_TOUCHPAD && config_done == 0){
-			// if config is not done then
-			// delete any old credentials
-			// and configure device
-			WiFi.mode(WIFI_STA);
-			WiFi.disconnect(true,true);
-			delay(1000);
-
-			if(config_paperd_ink(&display) < 0){
-				// Error occured while configuring so go to sleep until reset again
-				WiFi.mode(WIFI_STA);
-				WiFi.disconnect(true,true);
-				delay(1000);
-				esp_deep_sleep_start();
-			}
-		}
-	}
-
+ 
 	wifi_update = (now.hour % UPDATE_HOUR_INTERVAL == 0 && now.min % UPDATE_MIN_INTERVAL == 0);
 
 	// clear the display
@@ -135,7 +99,7 @@ void setup(void)
 	if(wifi_update || first_boot == 1){
 		// All WiFi related activity once every UPDATE_HOUR_INTERVAL hours
 		DEBUG.println("Connecting to WiFi...");
-		if(wifiManager.connectWifi("","") != WL_CONNECTED){
+		if(connect_wifi() != 0){
 			DEBUG.println("Can't connect to WiFi");
 			wifi_connected = 0;
 		}else{
@@ -146,7 +110,7 @@ void setup(void)
 			// Sync time
 			//set_time(); //set time to a predefined value
       configTime(0, 0, "pool.ntp.org");
-      if(get_date_dtls(time_zone_string) < 0){
+      if(get_date_dtls(TIME_ZONE) < 0){
         configTime(0, 0, "pool.ntp.org");
       }
 		}
@@ -170,7 +134,7 @@ void setup(void)
 	display_background(&display);
   display_tasks(&display);
   // Get the date details before any date/time related tasks
-  get_date_dtls(time_zone_string);
+  get_date_dtls(TIME_ZONE);
 	display_calender(&display);
 	display_time(&display); 
 
@@ -210,92 +174,17 @@ void loop()
 
 }
 
-int8_t config_paperd_ink(GxEPD_Class* display){
-	display_config_gui(display);
-
-	if(wifi_manager_connect(&wifiManager,0,1) < 0){
-		return -1;
-	}
-
-	return 0;
-}
-
-// WiFi Manager APIs
-void configModeCallback(WiFiManager *myWiFiManager) {
-	DEBUG.println("======> Entered config mode");
-	DEBUG.println(WiFi.softAPIP());
-	//if you used auto generated SSID, print it
-	DEBUG.println(myWiFiManager->getConfigPortalSSID());
-}
-
-void sta_connected(){
-	// Device is connected to proper SSID
-	DEBUG.println("======> Connected to new AP.");
-}
-
-void user_connected(){
-	// User has connected to the AP we are broadcasting
-	DEBUG.println("======> User connected to our AP.");
-}
-
-int8_t wifi_manager_connect(WiFiManager* wifiManager, uint8_t STA_first, uint8_t save_config_flash){
-
-	// Sets timeout until configuration portal gets turned off
-	// useful to make it all retry or go to sleep in seconds
-	wifiManager->setTimeout(180);
-
-	// Sets timeout for connecting as STA to new AP
-	wifiManager->setConnectTimeout(30);
-  wifiManager->setDebugOutput(0);
-
-	wifiManager->setAPCallback(configModeCallback);
-	wifiManager->setSaveConfigCallback(sta_connected);
-	wifiManager->setUserConnectedCallback(user_connected);
-
-	wifiManager->addParameter(&city_param);
-	wifiManager->addParameter(&country_param);
-	wifiManager->addParameter(&todoist_token_param);  
-	wifiManager->addParameter(&openweather_appkey_param); 
-	wifiManager->addParameter(&time_zone_param); 
-
-	//fetches ssid and pass and tries to connect
-	//if it does not connect it starts an access point with Paperd.Ink_<chip_id>
-	//and goes into a blocking loop awaiting configuration
-	if(!wifiManager->autoConnect(STA_first)) {
-		DEBUG.println("Failed to connect and hit timeout");
-		return -1;
-	}
-	DEBUG.println("Succesful connection to WiFi");
-
-	if(save_config_flash){
-		config_done = 1;
-		// save config only during the first connection
-		StaticJsonDocument<2048>config;
-		config["city"] = city_param.getValue();
-		config["country"] = country_param.getValue();
-		config["todoist_token"] = todoist_token_param.getValue();
-		config["openweather_appkey"] = openweather_appkey_param.getValue();
-		config["timezone"] = time_zone_param.getValue();
-		config["config_done"] = config_done;
-		serializeJson(config, buf);
-		save_config(buf);
-
-		load_config();
-	}
-	return 0;
-}
-
-int8_t Start_WiFi(){
-	uint8_t connAttempts = 0;
-	WiFi.begin();
-	while (WiFi.status() != WL_CONNECTED ) {
-		delay(500);
-		DEBUG.print(".");
-		if(connAttempts > 40){
-			return -1;
-		}
-		connAttempts++;
-	}
-	DEBUG.println("");
-	return 0;
+int8_t connect_wifi(){
+ uint8_t connAttempts = 0;
+ WiFi.begin(SSID, PASSWORD);
+ while (WiFi.status() != WL_CONNECTED ) {
+   delay(500);
+   DEBUG.print(".");
+   if(connAttempts > 40){
+    return -1;
+   }
+   connAttempts++;
+ }
+ DEBUG.println("Connected");
+ return 0;
 }

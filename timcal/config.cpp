@@ -50,30 +50,3 @@ int8_t writeFile(fs::FS &fs, const char* path, const char* message){
         return -1;
     }
 }
-
-int8_t save_config(const char* config){
-  return writeFile(SPIFFS,"/config.txt",config);
-}
-
-int8_t load_config(){
-  if(readFile(SPIFFS,"/config.txt",buf) < 0){
-    return -1;
-  }
-  StaticJsonDocument<2048>config;
-  DeserializationError error = deserializeJson(config, buf);
-  // Test if parsing succeeds.
-  if (error) {
-    DEBUG.print(F("deserializeJson() failed for config: "));
-    DEBUG.println(error.c_str());
-    return -2;
-  }else{
-    DEBUG.println("Got config details");
-  }
-  
-  strncpy(city_string,config["city"],30);
-  strncpy(country_string,config["country"],30);
-  strncpy(todoist_token_string,config["todoist_token"],42);
-  strncpy(openweather_appkey_string,config["openweather_appkey"],34);
-  strncpy(time_zone_string,config["timezone"],7);
-  config_done = config["config_done"];
-}

@@ -13,6 +13,30 @@
 #include "Gobold_Thin9pt7b.h"
 #include "Gobold_Thin7pt7b.h"
 
+// DETAILS TO EDIT
+#define SSID     "*****" // your network SSID (name of wifi network)
+#define PASSWORD "*****" // your network password
+#define TODOIST_TOKEN "*******" // your todoist API key without the word "Bearer"
+#define CITY "*****" // your city for weather
+#define COUNTRY "*****" // your country for weather
+#define OWM_ID "*****" // your open weather map APP ID
+#define TIME_ZONE "-05:30" // your time zone
+
+#define FORECAST_HOURS 0 // Show forecasted weather this many hours from update time. 0 for current weather
+
+// Update interval
+// Note: 0 should not be used!!
+#define UPDATE_HOUR_INTERVAL 6  // update after every UPDATE_HOUR_INTERVAL hours, 0 should not be used
+#define UPDATE_MIN_INTERVAL 60   // and at UPDATE_MIN mins, 0 should not be used
+// for example to update afer every 6 hours, UPDATE_HOUR_INTERVAL = 6 and UPDATE_MIN = 60
+// to update every 15 mins, UPDATE_HOUR_INTERVAL = 1 and UPDATE_MIN = 15
+
+// Calendar
+// Offset to change start day of month. 0=>Sun, 1=>Sat, 2=>Fri ... 6=>Mon
+#define START_DAY_OFFSET 6
+#define CAL_STRING "Mon   Tue   Wed   Thu   Fri   Sat   Sun"
+
+
 #define DEBUG Serial
 
 // I2C pins
@@ -49,20 +73,6 @@
 #define LARGE_FONT &Gobold_Thin25pt7b
 #define MED_FONT &Gobold_Thin9pt7b
 #define SMALL_FONT &Gobold_Thin7pt7b
-
-#define FORECAST_HOURS 0 // Show forecasted weather this many hours from update time. 0 for current weather
-
-// Update interval
-// Note: 0 should not be used!!
-#define UPDATE_HOUR_INTERVAL 6  // update after every UPDATE_HOUR_INTERVAL hours, 0 should not be used
-#define UPDATE_MIN_INTERVAL 60   // and at UPDATE_MIN mins, 0 should not be used
-// for example to update afer every 6 hours, UPDATE_HOUR_INTERVAL = 6 and UPDATE_MIN = 60
-// to update every 15 mins, UPDATE_HOUR_INTERVAL = 1 and UPDATE_MIN = 15
-
-// Calendar
-// Offset to change start day. 1=>Sun, 2=>Sat, 3=>Fri ... 7=>Mon
-#define START_DAY_OFFSET 7
-#define CAL_STRING "Mon   Tue   Wed   Thu   Fri   Sat   Sun"
 
 // todo list definitions
 // memory allocated for getting json output from todoist

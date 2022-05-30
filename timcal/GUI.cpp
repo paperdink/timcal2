@@ -11,7 +11,6 @@
 
 #include "GUI.h"
 #include "config.h"
-#include "WiFiManager.h"
 #include "date_time.h"
 #include "custom_parser.h"
 
@@ -213,52 +212,11 @@ void drawBitmapFrom_SD_ToBuffer(GxEPD_Class* display, fs::FS &fs, const char *fi
 }
 
 // Display APIs
-// display config page
-void display_config_gui(GxEPD_Class* display){
-  int16_t  x, y;
-  uint16_t w, h;
-  uint8_t prev_height;
-
-  uint16_t config_base_x = (display->width()/2);
-  uint16_t config_base_y = (display->height()/2);
-  display->fillScreen(GxEPD_WHITE);
-  display->setRotation(0);
-  
-  display->setFont(LARGE_FONT);
-  display->setTextSize(1);
-  display->setTextColor(GxEPD_BLACK);
-
-  display->getTextBounds(F("Hi!"), 0, 0, &x, &y, &w, &h);
-  display->setCursor(config_base_x-(w/2),config_base_y-(h/2));
-  display->println(F("Hi!"));
-  prev_height = h;
-
-  display->setFont(MED_FONT);
-  display->getTextBounds(F("Let's set up your paperd.ink"), 0, 0, &x, &y, &w, &h);
-  display->setCursor(config_base_x-(w/2), config_base_y-(h/2)+prev_height);
-  display->println(F("Let's set up your paperd.ink"));
-  prev_height += (display->height()/2)-(h/2);
-  
-  display->getTextBounds(F("Press reset and connect to"), 0, 0, &x, &y, &w, &h);
-  display->setCursor(config_base_x-(w/2), prev_height+h+10);
-  display->print(F("Press reset and connect to"));
-  prev_height += h;
-  
-  display->getTextBounds(F("paperd.ink_0000000000"), 0, 0, &x, &y, &w, &h);
-  display->setCursor(config_base_x-(w/2), prev_height+h+10);
-  display->print(F("paperd.ink_"));
-  display->println(String(ESP_getChipId()));
-
-  display->update();
-  delay(2000);
-  display->updateWindow(0, 0, GxEPD_WIDTH, GxEPD_HEIGHT, false);
-}
-
 
 // Fetch tasks
 RTC_DATA_ATTR char tasks[MAX_TASKS][MAX_TODO_STR_LENGTH+1];
 uint8_t task_count;
-String todoist_token_base = "Bearer ";
+String todoist_token = "Bearer " TODOIST_TOKEN;
 const char* todoist_url = "https://api.todoist.com/rest/v1/tasks";
 TodoJsonListener todo_listener;
 
@@ -272,7 +230,6 @@ int8_t fetch_todo(){
   DEBUG.println("Starting connection to server...");
   
   https.begin(*client, todoist_url);
-  String todoist_token = todoist_token_base + todoist_token_string;
   https.addHeader("Authorization", todoist_token.c_str(), 0, 0);
   httpCode = https.GET();
   
@@ -336,9 +293,9 @@ String openweathermap_link_base = "http://api.openweathermap.org/data/2.5/foreca
 const char* fetch_weather(){
   HTTPClient http;
 
-  openweathermap_link_base.replace("{p}", city_string);
-  openweathermap_link_base.replace("{c}", country_string);
-  openweathermap_link_base.replace("{i}", openweather_appkey_string);
+  openweathermap_link_base.replace("{p}", CITY);
+  openweathermap_link_base.replace("{c}", COUNTRY);
+  openweathermap_link_base.replace("{i}", OWM_ID);
   
   DEBUG.printf("Openweathermap link: %s \n",openweathermap_link_base.c_str());
   http.begin(openweathermap_link_base.c_str());
@@ -437,7 +394,7 @@ void display_calender(GxEPD_Class* display){
       if (i >= 3 && i <= 7) {
         num_offset = 17;    // then i need to reduce to 17
       }
-      if (j == 0 && i == now.day_offset) {
+      if (j == 0 && ((i-1) == now.day_offset || now.day_offset == 0)) {
         // start from the offset in the month, ie which day does 1st of the month lie on
         print_valid = 1;
       }
