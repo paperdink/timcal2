@@ -58,41 +58,6 @@ RTC_DATA_ATTR uint8_t first_boot = 1; // check if it is first boot
 
 esp_sleep_wakeup_cause_t wakeup_reason;
 
-#include <Fonts/FreeMonoBold9pt7b.h>
-void showFont(const char name[], const GFXfont* f)
-{
-  display.setFullWindow();
-  display.setRotation(0);
-  display.setTextColor(GxEPD_BLACK);
-  display.firstPage();
-  do
-  {
-    drawFont(name, f);
-  }
-  while (display.nextPage());
-}
-
-void drawFont(const char name[], const GFXfont* f)
-{
-  //display.setRotation(0);
-  display.fillScreen(GxEPD_WHITE);
-  display.setTextColor(GxEPD_BLACK);
-  display.setFont(f);
-  display.setCursor(0, 0);
-  display.println();
-  display.println(name);
-  display.println(" !\"#$%&'()*+,-./");
-  display.println("0123456789:;<=>?");
-  display.println("@ABCDEFGHIJKLMNO");
-  display.println("PQRSTUVWXYZ[\\]^_");
-  if (display.epd2.hasColor)
-  {
-    display.setTextColor(GxEPD_RED);
-  }
-  display.println("`abcdefghijklmno");
-  display.println("pqrstuvwxyz{|}~ ");
-}
-
 void setup(void)
 {
 	Serial.begin(115200);
