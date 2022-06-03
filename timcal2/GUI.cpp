@@ -42,7 +42,7 @@ uint32_t read32(File& f)
   return result;
 }
 
-void drawBitmapFrom_SD_ToBuffer(GxEPD_Class* display, fs::FS &fs, const char *filename, int16_t x, int16_t y, bool with_color)
+void drawBitmapFrom_SD_ToBuffer(GxEPD2_DISPLAY_CLASS<GxEPD2_DRIVER_CLASS, GxEPD2_DRIVER_CLASS::HEIGHT>* display, fs::FS &fs, const char *filename, int16_t x, int16_t y, bool with_color)
 {
   File file;
   bool valid = false; // valid format to be handled
@@ -248,7 +248,7 @@ int8_t fetch_todo(){
 }
 
 // display to-do list
-void display_tasks(GxEPD_Class* display){
+void display_tasks(GxEPD2_DISPLAY_CLASS<GxEPD2_DRIVER_CLASS, GxEPD2_DRIVER_CLASS::HEIGHT>* display){
   uint8_t todo_items_num = MAX_TASKS;    
   int16_t  x1, y1;
   uint16_t w, h;
@@ -331,7 +331,7 @@ const char* fetch_weather(){
   }
 }
 
-void display_weather(GxEPD_Class* display, const char* icon){
+void display_weather(GxEPD2_DISPLAY_CLASS<GxEPD2_DRIVER_CLASS, GxEPD2_DRIVER_CLASS::HEIGHT>* display, const char* icon){
   int16_t weather_base_y = 135;
   int16_t weather_base_x = 25;
   if(wifi_update || first_boot == 1){
@@ -344,7 +344,7 @@ void display_weather(GxEPD_Class* display, const char* icon){
   drawBitmapFrom_SD_ToBuffer(display, SPIFFS, weather_icon, weather_base_x, weather_base_y, 0);
 }
 
-void display_time(GxEPD_Class* display){
+void display_time(GxEPD2_DISPLAY_CLASS<GxEPD2_DRIVER_CLASS, GxEPD2_DRIVER_CLASS::HEIGHT>* display){
   int16_t  x1, y1;
   uint16_t w, h;
   
@@ -373,7 +373,7 @@ void display_time(GxEPD_Class* display){
   }
 }
 
-void display_calender(GxEPD_Class* display){
+void display_calender(GxEPD2_DISPLAY_CLASS<GxEPD2_DRIVER_CLASS, GxEPD2_DRIVER_CLASS::HEIGHT>* display){
   // display calender
   int16_t  x1, y1;
   uint16_t w, h;
@@ -433,7 +433,7 @@ void display_calender(GxEPD_Class* display){
 }
 
 // display battery status
-void display_battery(GxEPD_Class* display, float batt_voltage, uint8_t not_charging){
+void display_battery(GxEPD2_DISPLAY_CLASS<GxEPD2_DRIVER_CLASS, GxEPD2_DRIVER_CLASS::HEIGHT>* display, float batt_voltage, uint8_t not_charging){
   int16_t batt_base_y = 3;
   int16_t batt_base_x = 324;
     
@@ -457,7 +457,7 @@ void display_battery(GxEPD_Class* display, float batt_voltage, uint8_t not_charg
 
 }
 
-void display_wifi(GxEPD_Class* display, uint8_t status){
+void display_wifi(GxEPD2_DISPLAY_CLASS<GxEPD2_DRIVER_CLASS, GxEPD2_DRIVER_CLASS::HEIGHT>* display, uint8_t status){
   int16_t batt_base_y = 1;
   int16_t batt_base_x = 295;
   if(status == 1){
@@ -467,30 +467,9 @@ void display_wifi(GxEPD_Class* display, uint8_t status){
   }
 }
 
-void display_background(GxEPD_Class* display){
+void display_background(GxEPD2_DISPLAY_CLASS<GxEPD2_DRIVER_CLASS, GxEPD2_DRIVER_CLASS::HEIGHT>* display){
   // fill background
   display->fillRect(0, (display->height() / 3) * 2, display->width(), (display->height() / 3), GxEPD_BLACK);
   display->fillRect((display->width() / 4), 0, 5, (display->height() / 3) * 2, GxEPD_BLACK);
   display->fillRect((display->width() / 4), (display->height() / 3) * 2, 5, (display->height() / 3), GxEPD_WHITE);
-}
-
-void display_update(GxEPD_Class* display){
-  if (!(now.min % 5) || first_boot == 1) {
-    // Full update once every 5 mins and on the first boot
-    display->update();
-    delay(2000);
-    display->updateWindow(0, 0, GxEPD_WIDTH, GxEPD_HEIGHT, false);
-  }else{
-    //display->updateWindow(0, 0, GxEPD_WIDTH, GxEPD_HEIGHT, false);
-    int16_t  x1, y1;
-    uint16_t w, h;
-    
-    //display time
-    display->setFont(LARGE_FONT);
-    display->setTextSize(1);
-    display->setTextColor(GxEPD_BLACK);
-    
-    display->getTextBounds("03", TIME_BASE_X, TIME_BASE_Y, &x1, &y1, &w, &h); // 03 is arbitrary text to get the height and width
-    display->updateWindow(TIME_BASE_X - 10, TIME_BASE_Y - h - 10, w + 15, TIME_BASE_Y + h + 10, true);
-  }
 }
