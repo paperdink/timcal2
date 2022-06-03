@@ -20,7 +20,7 @@ Update the config.h file with configuration details
 #define CITY "*****" // your city for weather
 #define COUNTRY "*****" // your country for weather
 #define OWM_ID "*****" // your open weather map APP ID
-#define TIME_ZONE "-05:30" // your time zone relative to UTC. -05:30 is for India.
+#define TIME_ZONE "PST8PDT,M3.2.0,M11.1.0" // your time zone from list https://github.com/nayarsystems/posix_tz_db/blob/master/zones.csv
 ```
 ### Step 3:
 Select `ESP32 Dev module` in arduino `Tools>Board` and hit upload.
