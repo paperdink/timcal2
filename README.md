@@ -1,4 +1,7 @@
 # TimCal 2
+
+Note: This has been moved to the new Paperd.ink library [here](https://github.com/paperdink/PaperdInk-Library/tree/main/examples/Calther).
+
 Timcal example without wifi AP based configuration.
 
 ![Full Image](timcal_image.jpg)
